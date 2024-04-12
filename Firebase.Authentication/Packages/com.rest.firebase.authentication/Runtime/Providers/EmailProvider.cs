@@ -132,7 +132,6 @@ namespace Firebase.Rest.Authentication.Providers
         private class EmailCredential : AuthCredential
         {
             public EmailCredential(string email, string password)
-                : base(FirebaseProviderType.EmailAndPassword)
             {
                 Email = email;
                 Password = password;

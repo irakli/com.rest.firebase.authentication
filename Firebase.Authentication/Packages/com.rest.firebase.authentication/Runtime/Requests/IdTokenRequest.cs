@@ -1,7 +1,6 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using UnityEngine;
 
 namespace Firebase.Rest.Authentication.Requests
 {
@@ -10,12 +9,9 @@ namespace Firebase.Rest.Authentication.Requests
     {
         public IdTokenRequest(string idToken)
         {
-            this.idToken = idToken;
+            IdToken = idToken;
         }
 
-        [SerializeField]
-        private string idToken;
-
-        public string IdToken => idToken;
+        public string IdToken { get; protected set; }
     }
 }

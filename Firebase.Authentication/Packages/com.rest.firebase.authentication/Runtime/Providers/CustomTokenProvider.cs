@@ -70,7 +70,6 @@ namespace Firebase.Rest.Authentication.Providers
         private class CustomTokenCredential : AuthCredential
         {
             public CustomTokenCredential(string customToken)
-                : base(FirebaseProviderType.CustomToken)
             {
                 CustomToken = customToken;
             }

@@ -5,6 +5,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Firebase.Rest.Authentication.Exceptions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using UnityEngine;
 
 namespace Firebase.Rest.Authentication.Requests
@@ -26,13 +29,28 @@ namespace Firebase.Rest.Authentication.Requests
 
         public async Task<TResponse> ExecuteAsync(TRequest request)
         {
+            var requestSerializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
+            };
+
             var responseData = string.Empty;
-            var requestData = request != null ? JsonUtility.ToJson(request) : null;
+
+            var requestData = request != null
+                ? JsonConvert.SerializeObject(request, requestSerializerSettings)
+                : null;
+
             var url = GetFormattedUrl(Configuration.ApiKey);
 
             try
             {
-                var content = request != null ? new StringContent(requestData, Encoding.UTF8, "application/json") : null;
+                var content = request != null
+                    ? new StringContent(requestData, Encoding.UTF8, "application/json")
+                    : null;
+
                 var message = new HttpRequestMessage(Method, url)
                 {
                     Content = content
@@ -42,11 +60,13 @@ namespace Firebase.Rest.Authentication.Requests
                 responseData = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var response = JsonUtility.FromJson<TResponse>(responseData);
                 httpResponse.EnsureSuccessStatusCode();
+
                 return response;
             }
             catch (Exception e)
             {
                 var errorReason = FirebaseFailureParser.GetFailureReason(responseData);
+
                 throw new FirebaseAuthHttpException(e, url, requestData, responseData, errorReason);
             }
         }

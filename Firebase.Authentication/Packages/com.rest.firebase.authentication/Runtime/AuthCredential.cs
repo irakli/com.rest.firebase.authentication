@@ -7,11 +7,6 @@ namespace Firebase.Rest.Authentication
     /// </summary>
     public abstract class AuthCredential
     {
-        protected AuthCredential(FirebaseProviderType providerType)
-        {
-            ProviderType = providerType;
-        }
-
-        public FirebaseProviderType ProviderType { get; }
+        public FirebaseProviderType ProviderType { get; set; }
     }
 }

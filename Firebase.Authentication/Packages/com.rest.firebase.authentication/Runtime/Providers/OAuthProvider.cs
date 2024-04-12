@@ -32,19 +32,31 @@ namespace Firebase.Rest.Authentication.Providers
 
         protected virtual string LocaleParameterName => null;
 
-        protected static AuthCredential GetCredential(FirebaseProviderType providerType, string accessToken, OAuthCredentialTokenType tokenType)
-            => new OAuthCredential(accessToken, tokenType, providerType);
+        protected static AuthCredential GetCredential(
+            FirebaseProviderType providerType,
+            string accessToken,
+            OAuthCredentialTokenType tokenType)
+        {
+            return new OAuthCredential
+            {
+                ProviderType = providerType,
+                Token = accessToken,
+                TokenType = tokenType
+            };
+        }
 
         protected internal override async Task<FirebaseUser> SignInWithCredentialAsync(AuthCredential credential)
         {
             var authCredential = (OAuthCredential)credential;
-            var (user, response) = await verifyAssertion.ExecuteAndParseAsync(credential.ProviderType,
-                new VerifyAssertionRequest(
-                    idToken: null,
-                    $"https://{Configuration.AuthDomain}",
-                    authCredential.GetPostBodyValue(credential.ProviderType),
-                    authCredential.GetPendingTokenValue()))
-                .ConfigureAwait(false);
+            var (user, response) = await verifyAssertion.ExecuteAndParseAsync(credential.ProviderType, new VerifyAssertionRequest(
+                idToken: null,
+                requestUri: $"https://{Configuration.AuthDomain}",
+                postBody: authCredential.GetPostBodyValue(credential.ProviderType),
+                pendingToken: authCredential.GetPendingTokenValue(),
+                returnIdpCredential:  true,
+                returnSecureToken: true
+            )).ConfigureAwait(false);
+
             credential = GetCredential(response);
             response.Validate(credential);
             return user;
@@ -104,21 +116,9 @@ namespace Firebase.Rest.Authentication.Providers
 
         protected class OAuthCredential : AuthCredential
         {
-            public OAuthCredential(string accessToken, OAuthCredentialTokenType tokenType, FirebaseProviderType providerType)
-                : base(providerType)
-            {
-                if (string.IsNullOrWhiteSpace(accessToken))
-                {
-                    throw new InvalidOperationException($"{nameof(accessToken)} is invalid");
-                }
+            public string Token { get; set; }
 
-                Token = accessToken;
-                TokenType = tokenType;
-            }
-
-            private string Token { get; }
-
-            private OAuthCredentialTokenType TokenType { get; }
+            public OAuthCredentialTokenType TokenType { get; set; }
 
             internal virtual string GetPostBodyValue(FirebaseProviderType providerType)
             {

@@ -14,7 +14,7 @@ namespace Firebase.Rest.Authentication.Providers
         protected override string LocaleParameterName => "lang";
 
         internal override AuthCredential GetCredential(VerifyAssertionResponse response)
-            => new TwitterCredential(response.OauthAccessToken, response.OauthTokenSecret);
+            => new TwitterCredential(response.OauthTokenSecret);
 
         private class TwitterCredential : OAuthCredential
         {
@@ -27,8 +27,7 @@ namespace Firebase.Rest.Authentication.Providers
             }
 
             /// <inheritdoc />
-            public TwitterCredential(string accessToken, string secret)
-                : base(accessToken, OAuthCredentialTokenType.AccessToken, FirebaseProviderType.Twitter)
+            public TwitterCredential(string secret)
             {
                 Secret = secret;
             }
